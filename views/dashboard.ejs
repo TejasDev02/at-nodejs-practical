@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <h2>User Details</h2>
+    <p>Username: <%= user.username %></p>
+    <p>Email: <%= user.email %></p>
+
+    <h2>Change Password</h2>
+    <form id="change-password" action="/change-password" method="POST">
+        <label for="oldPassword">Old Password:</label>
+        <input type="password" id="oldPassword" name="oldPassword" required><br>
+        <label for="newPassword">New Password:</label>
+        <input type="password" id="newPassword" name="newPassword" required><br>
+        <label for="newPassword">Confirm Password:</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required><br>
+        <button type="submit">Change Password</button>
+    </form>
+
+    <form action="/logout" method="POST">
+        <button type="submit">Logout</button>
+    </form>
+
+    <script>
+        document.getElementById('change-password').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const password = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('Passwords and confirm password not matched');
+                return;
+            }
+            const passwordValidation = {
+                length: password.length >= 8,
+                hasUpperCase: /[A-Z]/.test(password),
+                hasLowerCase: /[a-z]/.test(password),
+                hasNumber: /\d/.test(password),
+                hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+            };
+
+            // Check if passwords match
+        
+
+            // Check if password meets validation requirements
+            if (!passwordValidation.length) {
+                alert('Password must be at least 8 characters long.');
+                return;
+            }
+            if (!passwordValidation.hasUpperCase) {
+                alert('Password must contain at least one uppercase letter.');
+                return;
+            }
+            if (!passwordValidation.hasLowerCase) {
+                alert('Password must contain at least one lowercase letter.');
+                return;
+            }
+            if (!passwordValidation.hasNumber) {
+                alert('Password must contain at least one number.');
+                return;
+            }
+            if (!passwordValidation.hasSpecialChar) {
+                alert('Password must contain at least one special character.');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                // Check if the response is okay (status 200)
+                if (response) {
+                    const result = await response.json();
+                    if (result.message) {
+                        window.location.href = '/dashboard';
+                        alert(result.message);
+                        // Show error message from the API
+                    
+                }
+            }
+            } catch (error) {
+                // Show network or other errors
+                console.error('Error:', error);
+                showPopup('A network error occurred. Please try again.');
+            }
+        });
+
+        function showPopup(message) {
+            const popup = document.createElement('div');
+            popup.style.position = 'fixed';
+            popup.style.bottom = '20px';
+            popup.style.left = '50%';
+            popup.style.transform = 'translateX(-50%)';
+            popup.style.padding = '10px';
+            popup.style.backgroundColor = '#f44336'; // Red background for error
+            popup.style.color = 'white';
+            popup.style.borderRadius = '5px';
+            popup.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+            popup.style.zIndex = '1000';
+            popup.innerText = message;
+            document.body.appendChild(popup);
+
+            // Remove popup after 3 seconds
+            setTimeout(() => {
+                document.body.removeChild(popup);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
